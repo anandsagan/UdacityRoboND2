@@ -38,6 +38,7 @@ I ran the forward kinematics demo as shown below to familarize myself with the R
 #### 2. Using the DH parameter table you derived earlier, create individual transformation matrices about each joint. In addition, also generate a generalized homogeneous transform between base_link and gripper_link using only end-effector(gripper) pose.
 
 **Modified DH Parameter Table**
+
 Links | alpha(i-1) | a(i-1) | d(i) | theta(i)
 --- | ---     | ---    | ---  | ---
 0-1 | 0       | 0      | 0.75 | qi
