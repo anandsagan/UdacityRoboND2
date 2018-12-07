@@ -52,6 +52,7 @@ Links | alpha(i-1) | a(i-1) | d(i) | theta(i)
 The general transformation matrix between two frames is shown below:
 **General Transformation Matrix**
 
+--- | --- | --- | ---
 cos(q)|- sin(q)|0|a
 sin(q) * cos(alpha)|cos(alpha)|- sin(alpha)|- sin(alpha) * d
 sin(q) * sin(alpha)|cos(q) * sin(alpha)|cos(alpha)|- cos(alpha) * d
