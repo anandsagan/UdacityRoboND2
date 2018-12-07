@@ -40,7 +40,7 @@ I ran the forward kinematics demo as shown below to familarize myself with the R
 **Modified DH Parameter Table**
 
 Links | alpha(i-1) | a(i-1) | d(i) | theta(i)
---- | ---     | ---    | ---  | ---
+:---: | :---:     | :---:    | :---:  | :---:
 0-1 | 0       | 0      | 0.75 | qi
 1-2 | - pi/2  | 0.35   | 0    | - pi/2 + q2
 2-3 | 0       | 1.25   | 0    | q3
@@ -60,17 +60,24 @@ def TF_Matrix(alpha,a,d,q):
 	    return TF
 ```
 
-Then, to derive the tranformation matrix between each frame, run the above function with the appropriate inputs:
+Then, to derive the tranformation matrix between each link, run the above function with the appropriate inputs:
 
 ```sh
 T0_1 = TF_Matrix(alpha0, a0, d1, q1).subs(DH_Table)
-	T1_2 = TF_Matrix(alpha1, a1, d2, q2).subs(DH_Table)
-	T2_3 = TF_Matrix(alpha2, a2, d3, q3).subs(DH_Table)
-	T3_4 = TF_Matrix(alpha3, a3, d4, q4).subs(DH_Table)
-	T4_5 = TF_Matrix(alpha4, a4, d5, q5).subs(DH_Table)
-	T5_6 = TF_Matrix(alpha5, a5, d6, q6).subs(DH_Table)
-	T6_EE = TF_Matrix(alpha6, a6, d7, q7).subs(DH_Table)
+T1_2 = TF_Matrix(alpha1, a1, d2, q2).subs(DH_Table)
+T2_3 = TF_Matrix(alpha2, a2, d3, q3).subs(DH_Table)
+T3_4 = TF_Matrix(alpha3, a3, d4, q4).subs(DH_Table)
+T4_5 = TF_Matrix(alpha4, a4, d5, q5).subs(DH_Table)
+T5_6 = TF_Matrix(alpha5, a5, d6, q6).subs(DH_Table)
+T6_EE = TF_Matrix(alpha6, a6, d7, q7).subs(DH_Table)
 ```
+
+Finally, to get the homogenous transform between link 0 and the end effector, simply multiply all the transforms like such:
+
+```sh
+T0_EE = T0_1 * T1_2 * T2_3 * T3_4 * T4_5 * T5_6 * T6_EE
+```
+
 #### 3. Decouple Inverse Kinematics problem into Inverse Position Kinematics and inverse Orientation Kinematics; doing so derive the equations to calculate all individual joint angles.
 
 And here's where you can draw out and show your math for the derivation of your theta angles.
