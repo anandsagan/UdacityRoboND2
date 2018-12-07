@@ -51,10 +51,23 @@ Links | alpha(i-1) | a(i-1) | d(i) | theta(i)
 
 The general transformation matrix between two frames is shown below:
 **General Transformation Matrix**
+
 cos(q)|-sin(q)|0|a
 sin(q)*cos(alpha) | cos(alpha)|-sin(alpha)|-sin(alpha)*d
 sin(q)*sin(alpha)|cos(q)*sin(alpha)|cos(alpha)|-cos(alpha)*d
 0|0|0|1
+
+Then, to get transformation matrices between each frame, I created the following function which takes input of `alpha`, `a`, `d`, and `q`:
+
+```sh
+def TF_Matrix(alpha,a,d,q):
+	    TF = Matrix([[		cos(q),	-sin(q),		0,          a],
+		    [sin(q)*cos(alpha),cos(q)*cos(alpha), -sin(alpha),  -sin(alpha)*d],
+		    [sin(q)*sin(alpha),cos(q)*sin(alpha), cos(alpha),    cos(alpha)*d],
+		    [	    0,		0,		0,			    1]])
+	    return TF
+```
+
 #### 3. Decouple Inverse Kinematics problem into Inverse Position Kinematics and inverse Orientation Kinematics; doing so derive the equations to calculate all individual joint angles.
 
 And here's where you can draw out and show your math for the derivation of your theta angles.
