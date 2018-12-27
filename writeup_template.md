@@ -33,6 +33,10 @@ In order to successfully complete this project, I used the following environment
 #### Running Forward Kinematics Demo
 I ran the forward kinematics demo as shown below to familarize myself with the RVIZ environment, and to see how each joint reacts when the joint space parameters were adjusted and the direction and orientation of each joint in the cartesian space. To run the demo, I ran the following shell script: 
 
+```sh
+$ roslaunch kuka_arm forward_kinematics.launch
+```
+
 ![alt text][image1]
 
 #### 2. Using the DH parameter table you derived earlier, create individual transformation matrices about each joint. In addition, also generate a generalized homogeneous transform between base_link and gripper_link using only end-effector(gripper) pose.
@@ -49,14 +53,14 @@ Links | alpha(i-1) | a(i-1) | d(i) | theta(i)
 5-6 | - pi/2  | 0      | 0    | q6
 6-EE| 0       | 0      | 0.303| 0
 
-To get transformation matrices between each frame, I created the following function which takes input of `alpha`, `a`, `d`, and `q`:
+To get transformation matrices between each frame, I created the function below which takes input of `alpha`, `a`, `d`, and `q`:
 
 ```sh
 def TF_Matrix(alpha,a,d,q):
-	    TF = Matrix([[		cos(q),	-sin(q),		0,          a],
-		    [sin(q)*cos(alpha),cos(q)*cos(alpha), -sin(alpha),  -sin(alpha)*d],
-		    [sin(q)*sin(alpha),cos(q)*sin(alpha), cos(alpha),    cos(alpha)*d],
-		    [	    0,		0,		0,			    1]])
+	    TF = Matrix([[	cos(q),		 -sin(q),	   0,            a],
+		    [sin(q)*cos(alpha),cos(q)*cos(alpha),-sin(alpha),-sin(alpha)*d],
+		    [sin(q)*sin(alpha),cos(q)*sin(alpha), cos(alpha), cos(alpha)*d],
+		    [		     0,		       0,	   0,		1]])
 	    return TF
 ```
 
@@ -71,13 +75,77 @@ T4_5 = TF_Matrix(alpha4, a4, d5, q5).subs(DH_Table)
 T5_6 = TF_Matrix(alpha5, a5, d6, q6).subs(DH_Table)
 T6_EE = TF_Matrix(alpha6, a6, d7, q7).subs(DH_Table)
 ```
+The transformation Matrix for each joint is given below:
 
-Finally, to get the homogenous transform between link 0 and the end effector, simply multiply all the transforms like such:
+`T0_1`:
+```sh
+[cos(q1), -sin(q1), 0, 0],
+[sin(q1), cos(q1), 0, 0],
+[0, 0, 1, 0.75],
+[0, 0, 0, 1]
+```
+
+`T1_2`:
+```sh
+[cos(q2 - 0.5*pi), -sin(q2 - 0.5*pi), 0, 0.35],
+[0, 0, 1, 0],
+[-sin(q2 - 0.5*pi), -cos(q2 - 0.5*pi), 0, 0],
+[0, 0, 0, 1]
+```
+
+`T2_3`:
+```sh
+[cos(q3), -sin(q3), 0, 1.25],
+[sin(q3), cos(q3), 0, 0],
+[0, 0, 1, 0],
+[0, 0, 0, 1]
+```
+
+`T3_4`:
+```sh
+[[cos(q4), -sin(q4), 0, -0.054],
+[0, 0, 1, 1.5],
+[-sin(q4), -cos(q4), 0, 0],
+[0, 0, 0, 1]]
+```
+
+`T4_5`:
+```sh
+[[cos(q5), -sin(q5), 0, 0],
+[0, 0, -1, 0],
+[sin(q5), cos(q5), 0, 0],
+[0, 0, 0, 1]]
+```
+
+`T5_6`:
+```sh
+[cos(q6), -sin(q6), 0, 0],
+[0, 0, 1, 0],
+[-sin(q6), -cos(q6), 0, 0],
+[0, 0, 0, 1]
+```
+
+`T6_EE`:
+```sh
+[1, 0, 0, a6],
+[0, 1, 0, 0],
+[0, 0, 1, 0.303],
+[0, 0, 0, 1]
+```
+
+Finally, to get the generalized homogenous transform between base_link and the gripper_link, simply multiply all the transforms like such:
 
 ```sh
 T0_EE = T0_1 * T1_2 * T2_3 * T3_4 * T4_5 * T5_6 * T6_EE
 ```
+which results to:
 
+```sh
+[0, 0, 1, 2.153],
+[0, -1, 0, 0],
+[1, 0, 0, 1.946],
+[0, 0, 0, 1]
+```
 #### 3. Decouple Inverse Kinematics problem into Inverse Position Kinematics and inverse Orientation Kinematics; doing so derive the equations to calculate all individual joint angles.
 
 And here's where you can draw out and show your math for the derivation of your theta angles.
