@@ -19,7 +19,8 @@
 [image1]: ./misc_images/misc1.png
 [image2]: ./misc_images/misc3.png
 [image3]: ./misc_images/misc2.png
-
+[dhpic]: ./misc_images/pic1.png
+[angpic]: ./misc_images/pic2.png
 ---
 ### Writeup
 In order to successfully complete this project, I used the following environment:
@@ -40,6 +41,16 @@ $ roslaunch kuka_arm forward_kinematics.launch
 ![alt text][image1]
 
 #### 2. Using the DH parameter table you derived earlier, create individual transformation matrices about each joint. In addition, also generate a generalized homogeneous transform between base_link and gripper_link using only end-effector(gripper) pose.
+
+
+Shown below is a sketch of the KUKA arms joints and links, and relevant parameters for the Modified DH parameter table where:
+
+![alt text][dhpic]
+
+**Link Length**:a(i-1) = Z(i-1) to Z(i) along to X(i-1) axis
+**Link Offset**:d(i) = X(i-1) to X(i) along Z(i) axis
+**Link Twist**: alpha(i-1) = twist from Z(i-1) to Z(i) measured about X(i-1) axis
+**Joint Angle**: theta(i) = angle from X(i-1) to X(i) measured about Z(i) axis
 
 **Modified DH Parameter Table**
 
@@ -208,7 +219,7 @@ The x, y, and z coordinates for the WC can now be calculated:
 ```
 
 
-Now, we can easily calculate `theta1`, the angle of the Joint 1 by simply doing arctan of the x and y coordinates of the WC:
+Now, we can easily calculate `theta1`, the angle of the Joint 1 by simply doing `arctan` of the x and y coordinates of the WC:
 
 ```sh
 	theta1 = atan2(WC[1],WC[0])
@@ -216,9 +227,9 @@ Now, we can easily calculate `theta1`, the angle of the Joint 1 by simply doing 
 
 In order to calculate `theta2` and `theta3`, refer to the diagram below:
 
-![alt text][NEWIMAGE]
+![alt text][angpic]
 
-Then, we can use the law of cosines to calculate angles `a`, `b`, and `c`.
+Then, we can use the law of cosines to calculate angles `a`, `b`, and `c`:
 
 ```sh
     angle_a = acos((side_b*side_b+side_c*side_c-side_a*side_a)/(2*side_b*side_c))
@@ -234,8 +245,27 @@ Now that we have obtained values for angles `a`, `b`, and `c`, we can calculate 
 ```
 
 ##### Inverse Orientation
+Now that we have values for `theta1`, `theta2`, and `theta3`, we need to find the remaining three angles. The product of the rotations about each joint must be equal to the roll, pitch, and yaw between the `base_link` and `gripper_link`. Therefore we can say that:
 
+```sh
+    R0_6 = ROT_EE
+```
 
+We can subsitute our values for the first three angles and multiply each side by `inv(R0_3)` and we can determine the specific rotation matrix from Link 3 to 6:
+
+```sh
+	    R0_3 = T0_1[0:3,0:3]*T1_2[0:3,0:3]*T2_3[0:3,0:3]
+	    R0_3 = R0_3.evalf(subs={q1:theta1, q2:theta2, q3:theta3})
+		
+	    R3_6 = R0_3.inv("LU")*ROT_EE
+```
+
+And then we can finally solve for `theta4`, `theta5`, and `theta6`
+
+	    theta4 = atan2(R3_6[2,2], -R3_6[0,2])
+	    theta5 = atan2(sqrt(R3_6[0,2]*R3_6[0,2]+R3_6[2,2]*R3_6[2,2]),R3_6[1,2])
+	    theta6 = atan2(-R3_6[1,1], R3_6[1,0])
+```
 
 ### Project Implementation
 
