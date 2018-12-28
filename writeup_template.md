@@ -19,8 +19,8 @@
 [image1]: ./misc_images/misc1.png
 [image2]: ./misc_images/misc3.png
 [image3]: ./misc_images/misc2.png
-[dhpic]: ./misc_images/pic1.png
-[angpic]: ./misc_images/pic2.png
+[dhpic]: ./misc_images/pic1.jpg
+[angpic]: ./misc_images/pic2.jpg
 
 ---
 ### Writeup
