@@ -150,23 +150,7 @@ which results to the matrix below when all the q values are equal to 0:
 To correct for the orientation difference of the gripper link  between URDF and DH convention, we need a matrix that rotates first about the y axis then the z axis. I implemented the transform below to do so:
 
 ```sh
-	ROT_x = Matrix([[1,     0,      0],
-	    	        [0,cos(r),-sin(r)],
-		        [0,sin(r), cos(r)]]) #ROLL
-
-	ROT_y = Matrix([[cos(p) ,	0, sin(p)],
-		        [0      ,	1,      0],
-		        [-sin(p), 	0,cos(p)]]) # PITCH
-
-	ROT_z = Matrix([[cos(y),-sin(y),	0],
-    		        [sin(y), cos(y),	0],
-		        [0     ,      0,    1]]) # YAW
- 
-	ROT_EE = ROT_z*ROT_y*ROT_x
-
-	Rerror = ROT_z.subs(y,radians(180))*ROT_y.subs(p,radians(-90))
-
-	ROT_EE = ROT_EE*Rerror
+    Rerror = ROT_z.subs(y,radians(180))*ROT_y.subs(p,radians(-90))
 ```
 
 
@@ -193,9 +177,63 @@ In order to get the WC position, we need the end effector (EE) position and orie
          req.poses[x].orientation.z,
          req.poses[x].orientation.w])
 ``` 
+Then, we can build a rotation matrix for the EE and apply the correction matrix for the difference between URDF and DH conventions:
 
 
-![alt text][image2]
+```sh
+	ROT_x = Matrix([[1,     0,      0],
+	    	        [0,cos(r),-sin(r)],
+		        [0,sin(r), cos(r)]]) #ROLL
+
+	ROT_y = Matrix([[cos(p) ,	0, sin(p)],
+		        [0      ,	1,      0],
+		        [-sin(p), 	0,cos(p)]]) # PITCH
+
+	ROT_z = Matrix([[cos(y),-sin(y),	0],
+    		        [sin(y), cos(y),	0],
+		        [0     ,      0,    1]]) # YAW
+ 
+	ROT_EE = ROT_z*ROT_y*ROT_x
+
+	Rerror = ROT_z.subs(y,radians(180))*ROT_y.subs(p,radians(-90))
+
+	ROT_EE = ROT_EE*Rerror
+
+   	ROT_EE = ROT_EE.subs({'r':roll,'p':pitch,'y':yaw})
+```
+The x, y, and z coordinates for the WC can now be calculated:
+
+```sh
+        WC = EE - (0.303)*ROT_EE[:,2]
+```
+
+
+Now, we can easily calculate `theta1`, the angle of the Joint 1 by simply doing arctan of the x and y coordinates of the WC:
+
+```sh
+	theta1 = atan2(WC[1],WC[0])
+```
+
+In order to calculate `theta2` and `theta3`, refer to the diagram below:
+
+![alt text][NEWIMAGE]
+
+Then, we can use the law of cosines to calculate angles `a`, `b`, and `c`.
+
+```sh
+    angle_a = acos((side_b*side_b+side_c*side_c-side_a*side_a)/(2*side_b*side_c))
+    angle_b = acos((side_a*side_a+side_c*side_c-side_b*side_b)/(2*side_a*side_c))
+    angle_c = acos((side_b*side_b+side_a*side_a-side_c*side_c)/(2*side_b*side_a))
+```
+
+Now that we have obtained values for angles `a`, `b`, and `c`, we can calculate for `theta2` and `theta3`:
+
+```sh
+    theta2 = pi/2 - angle_a -atan2(WC[2]-0.75, sqrt(WC[0]*WC[0]+WC[1]*WC[1])-.35)
+    theta3 = pi/2 - (angle_b+.036)
+```
+
+##### Inverse Orientation
 
 
 
