@@ -273,11 +273,15 @@ And then we can finally solve for `theta4`, `theta5`, and `theta6`
 
 #### 1. Fill in the `IK_server.py` file with properly commented python code for calculating Inverse Kinematics based on previously performed Kinematic Analysis. Your code must guide the robot to successfully complete 8/10 pick and place cycles. Briefly discuss the code you implemented and your results. 
 
+The code is essentially a tool to help calculate the transformation matrices, perform inverse orientation and position problems, and to visualize the movement of the robot in the simulation. My code starts with importing the important modules, followed by initiallizing the symbols required to perform the kinematic analysis of this project. The code runs a service called `kuka_arm.srv` and uses `trajectory_msgs.msg` and `geometry_msgs.msg` to communicate with the robot. The code, `IK_server.py` can be found in the `scripts` folder of the `kuka_arm` directory. 
 
-Here I'll talk about the code, what techniques I used, what worked and why, where the implementation might fail and how I might improve it if I were going to pursue this project further.
+Using the roll, pitch, yaw, and positions of the end effector, we can determine the WC position. Then, we can solve for `theta_2` and `theta_3` as an inverse position problem as described above.
+
+Using the rotation matrix only between Links 0 and 3 and the complete rotational matrix between the base_link and the end_effector, we can use the `inv` function to find the rotation matrix between Links 3 and 6. Finally, we can calculate `theta_4`, `theta_5`, and `theta_6`.
 
 
-And just for fun, another example image:
+
+And here's an image of the completed pick and place process:
 ![alt text][image3]
 
 
