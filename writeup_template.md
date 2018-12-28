@@ -154,7 +154,7 @@ which results to the matrix below when all the q values are equal to 0:
 
 ```sh
 [0, 0, 1, 2.153],
-[0, -1,0, 0],
+[0,-1, 0, 0],
 [1, 0, 0, 1.946],
 [0, 0, 0, 1]
 ```
