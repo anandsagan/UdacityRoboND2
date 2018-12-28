@@ -80,49 +80,49 @@ The transformation Matrix for each joint is given below:
 `T0_1`:
 ```sh
 [cos(q1), -sin(q1), 0, 0],
-[sin(q1), cos(q1), 0, 0],
-[0, 0, 1, 0.75],
-[0, 0, 0, 1]
+[sin(q1),  cos(q1), 0, 0],
+[      0,        0, 1, 0.75],
+[      0,        0, 0, 1]
 ```
 
 `T1_2`:
 ```sh
-[cos(q2 - 0.5*pi), -sin(q2 - 0.5*pi), 0, 0.35],
-[0, 0, 1, 0],
+[ cos(q2 - 0.5*pi), -sin(q2 - 0.5*pi), 0, 0.35],
+[                0,                 0, 1, 0],
 [-sin(q2 - 0.5*pi), -cos(q2 - 0.5*pi), 0, 0],
-[0, 0, 0, 1]
+[                0,                 0, 0, 1]
 ```
 
 `T2_3`:
 ```sh
 [cos(q3), -sin(q3), 0, 1.25],
-[sin(q3), cos(q3), 0, 0],
-[0, 0, 1, 0],
-[0, 0, 0, 1]
+[sin(q3),  cos(q3), 0, 0],
+[      0,        0, 1, 0],
+[      0,        0, 0, 1]
 ```
 
 `T3_4`:
 ```sh
 [[cos(q4), -sin(q4), 0, -0.054],
-[0, 0, 1, 1.5],
+[       0,        0, 1, 1.5],
 [-sin(q4), -cos(q4), 0, 0],
-[0, 0, 0, 1]]
+[       0,        0, 0, 1]]
 ```
 
 `T4_5`:
 ```sh
 [[cos(q5), -sin(q5), 0, 0],
-[0, 0, -1, 0],
-[sin(q5), cos(q5), 0, 0],
-[0, 0, 0, 1]]
+[       0,        0,-1, 0],
+[ sin(q5),  cos(q5), 0, 0],
+[       0,        0, 0, 1]]
 ```
 
 `T5_6`:
 ```sh
-[cos(q6), -sin(q6), 0, 0],
-[0, 0, 1, 0],
+[ cos(q6), -sin(q6), 0, 0],
+[       0,        0, 1, 0],
 [-sin(q6), -cos(q6), 0, 0],
-[0, 0, 0, 1]
+[       0,        0, 0, 1]
 ```
 
 `T6_EE`:
@@ -138,19 +138,66 @@ Finally, to get the generalized homogenous transform between base_link and the g
 ```sh
 T0_EE = T0_1 * T1_2 * T2_3 * T3_4 * T4_5 * T5_6 * T6_EE
 ```
-which results to:
+which results to the matrix below when all the q values are equal to 0:
 
 ```sh
 [0, 0, 1, 2.153],
-[0, -1, 0, 0],
+[0, -1,0, 0],
 [1, 0, 0, 1.946],
 [0, 0, 0, 1]
 ```
+
+To correct for the orientation difference of the gripper link  between URDF and DH convention, we need a matrix that rotates first about the y axis then the z axis. I implemented the transform below to do so:
+
+```sh
+	ROT_x = Matrix([[1,     0,      0],
+	    	        [0,cos(r),-sin(r)],
+		        [0,sin(r), cos(r)]]) #ROLL
+
+	ROT_y = Matrix([[cos(p) ,	0, sin(p)],
+		        [0      ,	1,      0],
+		        [-sin(p), 	0,cos(p)]]) # PITCH
+
+	ROT_z = Matrix([[cos(y),-sin(y),	0],
+    		        [sin(y), cos(y),	0],
+		        [0     ,      0,    1]]) # YAW
+ 
+	ROT_EE = ROT_z*ROT_y*ROT_x
+
+	Rerror = ROT_z.subs(y,radians(180))*ROT_y.subs(p,radians(-90))
+
+	ROT_EE = ROT_EE*Rerror
+```
+
+
 #### 3. Decouple Inverse Kinematics problem into Inverse Position Kinematics and inverse Orientation Kinematics; doing so derive the equations to calculate all individual joint angles.
 
-And here's where you can draw out and show your math for the derivation of your theta angles.
+The final three joints in the KUKA KR210 robot that we use are all revolute and since thier joint axes intersect at a single point, we can identify this set of joints as a spherical wrist with the wrist center (WC) at Joint 5. We can now separate this Inverse Kinematics problem into Inverse Position and Inverse Orientation problems.
+
+##### Inverse Position
+
+In order to get the WC position, we need the end effector (EE) position and orientation, which we can obtain through with the code shown below:
+
+```sh
+    px = req.poses[x].position.x
+    py = req.poses[x].position.y
+    pz = req.poses[x].position.z
+   
+    EE = Matrix([[px],
+                 [py],
+                 [pz]])
+   
+    (roll,pitch,yaw) = tf.transformations.euler_from_quaternion(
+        [req.poses[x].orientation.x,
+         req.poses[x].orientation.y,
+         req.poses[x].orientation.z,
+         req.poses[x].orientation.w])
+``` 
+
 
 ![alt text][image2]
+
+
 
 ### Project Implementation
 
